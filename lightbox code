@@ -1,0 +1,81 @@
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#include <avr/power.h>
+#endif
+#define PIN 8 // what pin it is connected to
+#define NUMPIXELS 5 // Number of NeoPixels that are attached to the board
+#define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
+#include "Adafruit_MCP9808.h"
+
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
+
+Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
+
+//Yellow:255, 82, 0, Blue:51, 51, 204 Orange:255, 82, 0
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(8, OUTPUT);
+
+  if (!tempsensor.begin(0x18)) {
+
+  }
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+
+
+  tempsensor.setResolution(3); // sets the resolution mode of reading, the modes are defined in the table bellow:
+}
+// to set up a pixel , use  pixels.setPixelColor(x, pixels.Color(0, 150, 0));
+//pixels.clear(); // Set all pixel colors to 'off'
+
+
+void loop() {
+  pixels.clear();
+  tempsensor.wake();   // wake up, ready to read!
+  float c = tempsensor.readTempC();
+  float f = tempsensor.readTempF();
+  Serial.print(c);
+  Serial.print("\t");
+  Serial.print(f);
+  if (f > 76) {
+    if (f > 78) {
+      pixels.setPixelColor(0, pixels.Color(255, 0, 0));
+      pixels.setPixelColor(1, pixels.Color(255, 0, 0));
+      pixels.setPixelColor(2, pixels.Color(255, 0, 0));
+      pixels.setPixelColor(3, pixels.Color(255, 0, 0));
+      pixels.setPixelColor(4, pixels.Color(255, 0, 0));
+      pixels.show();   // Send the updated pixel colors to the hardware.
+    }
+    if (f < 78) {
+      pixels.setPixelColor(0, pixels.Color(255, 82, 0));
+      pixels.setPixelColor(1, pixels.Color(255, 82, 0));
+      pixels.setPixelColor(2, pixels.Color(255, 82, 0));
+      pixels.setPixelColor(3, pixels.Color(255, 82, 0));
+      pixels.show();   // Send the updated pixel colors to the hardware.
+    }
+  }
+  if (f < 76) {
+    if (f > 73) {
+      pixels.setPixelColor(0, pixels.Color(200, 200, 15));
+      pixels.setPixelColor(1, pixels.Color(200, 200, 15));
+      pixels.setPixelColor(2, pixels.Color(200, 200, 15));
+      pixels.show();
+    }
+  }
+  if (f < 73) {
+    if (f > 71) {
+      pixels.setPixelColor(0, pixels.Color(20, 100, 150));
+      pixels.setPixelColor(1, pixels.Color(20, 100, 150));
+      pixels.show();   // Send the updated pixel colors to the hardware.
+    }
+    else {
+      pixels.setPixelColor(0, pixels.Color(25, 25, 100));
+      pixels.show();
+    }
+  }
+  delay(20);
+  tempsensor.shutdown_wake(1); // shutdown MSP9808 - power consumption ~0.1 mikro Ampere, stops temperature sampling
+  Serial.println("");
+
+}
